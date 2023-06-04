@@ -1,19 +1,41 @@
-void setup() {
-  pinMode(12, OUTPUT);
-  pinMode(A4, OUTPUT);
-  digitalWrite(12, HIGH);
-  for(int i = 0; i < 100; i++){
-    digitalWrite(A4, HIGH);
-    delay(100);
-    digitalWrite(A4, LOW);
-    delay(100);
-  }
-  delay(10000);
-  digitalWrite(12, LOW);
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SH110X.h>
 
+// I/O pins for controlling everything
+#define tonePin 11
+#define selfActivationPin 1
+#define knobPin 5
+
+#define cell1Pin A0
+#define cell2Pin A1
+#define cell3Pin A2
+#define cell4Pin A3
+#define cell5Pin A6
+#define cell6Pin A7
+
+
+void setup() {
+  pinMode(selfActivationPin, OUTPUT);
+  pinMode(tonePin, OUTPUT);
+  pinMode(knobPin, INPUT_PULLUP);
+  success_tone();
+  
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  
 
+}
+
+
+void success_tone(){
+  int arr_length = 10;
+  int durations[arr_length] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  int notes[arr_length] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+  for(int i = 0; i < arr_length; i++){
+    tone(tonePin, notes[i], durations[i]);
+  }
 }
