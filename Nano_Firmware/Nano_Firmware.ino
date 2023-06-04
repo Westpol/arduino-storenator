@@ -40,6 +40,7 @@ void setup() {
 }
 
 void loop() {
+  sanity_check();
   
   if(voltageUpdaterTimer < millis()){
     update_cell_voltage();
@@ -48,6 +49,19 @@ void loop() {
 
 }
 
+void sanity_check(){
+  if(cell_delta > 0.1){
+    emergency_cutoff();
+  }
+}
+
+float cell_delta(){
+  return 0.1;
+}
+
+void emergency_cutoff(){
+  digitalWrite(selfActivationPin, LOW);
+}
 
 void success_tone(){
   int arr_length = 10;
