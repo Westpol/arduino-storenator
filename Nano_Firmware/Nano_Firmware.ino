@@ -50,13 +50,29 @@ void loop() {
 }
 
 void sanity_check(){
-  if(cell_delta > 0.1){
+  if(cell_delta() > 0.1){
     emergency_cutoff();
+  }
+  for(int il = 0; il < 6; il++){
+    if(cellVoltages[il] / (il + 1) < 3.6){
+      emergency_cutoff();
+    }
   }
 }
 
 float cell_delta(){
-  return 0.1;
+  update_cell_voltage();
+  float lowest = cellVoltages[0];
+  float highest = cellVoltages[0];
+  for(int il = 0; il < 6; il++){
+    if(lowest > cellVoltages[il]){
+      lowest = cellVoltages[il];
+    }
+    else if(highest < cellVoltages[il]){
+      highest = cellVoltages[il];
+    }
+  }
+  return highest - lowest;
 }
 
 void emergency_cutoff(){
