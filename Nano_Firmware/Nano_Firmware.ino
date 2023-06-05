@@ -3,6 +3,18 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>
 
+#define i2c_Address 0x3c //initialize with the I2C addr 0x3C Typically eBay OLED's
+//#define i2c_Address 0x3d //initialize with the I2C addr 0x3D Typically Adafruit OLED's
+
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+#define OLED_RESET -1   //   QT-PY / XIAO
+Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+#define white SH110X_WHITE
+
+
+
 // I/O pins for controlling everything
 #define tonePin 11
 #define selfActivationPin 1
@@ -34,6 +46,16 @@ void setup() {
   pinMode(cell4Pin, INPUT);
   pinMode(cell5Pin, INPUT);
   pinMode(cell6Pin, INPUT);
+
+  display.begin(i2c_Address, true);
+  display.display();
+  delay(2000);
+  display.clearDisplay();
+  display.drawPixel(10, 10, white);
+  delay(1000);
+  display.display();
+  display.clearDisplay();
+  display.display();
 
   success_tone();
   
@@ -81,11 +103,13 @@ void emergency_cutoff(){
 
 void success_tone(){
   int arr_length = 10;
-  int durations[arr_length] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  int notes[arr_length] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  int durations[arr_length] = {250, 250, 250, 250, 0, 0, 0, 0, 0, 0};
+  int notes[arr_length] = {440, 440, 440, 1000, 0, 0, 0, 0, 0, 0};
 
   for(int i = 0; i < arr_length; i++){
-    tone(tonePin, notes[i], durations[i]);
+    tone(tonePin, notes[i]);
+    delay(durations[i]);
+    noTone(tonePin);
   }
 }
 
