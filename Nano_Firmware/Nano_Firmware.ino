@@ -52,8 +52,8 @@ void setup() {
   delay(2000);
   display.clearDisplay();
   display.drawPixel(10, 10, white);
-  delay(1000);
   display.display();
+  delay(1000);
   display.clearDisplay();
   display.display();
 
