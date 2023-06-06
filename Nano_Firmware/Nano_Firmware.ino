@@ -30,12 +30,17 @@ Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, 
 #define ALL_CELLS 7
 
 int cellPins[6] = {cell1Pin, cell2Pin, cell3Pin, cell4Pin, cell5Pin, cell6Pin};
-float cellVoltages[6] = {0, 0, 0, 0, 0, 0};
+double cellVoltages[6] = {0, 0, 0, 0, 0, 0};
+float avgCellVoltages[6] = {0, 0, 0, 0, 0, 0};
+float singleCellVoltages[6] = {0, 0, 0, 0, 0, 0};
+int cellUpdates = 0;
 
 unsigned long voltageUpdaterTimer = 0;
-int voltageUpdaterTimerDelay = 100;
+int voltageUpdaterTimerDelay = 200;
 
 void setup() {
+  Serial.begin(9600);
+
   pinMode(selfActivationPin, OUTPUT);
   digitalWrite(selfActivationPin, HIGH);
   pinMode(tonePin, OUTPUT);
@@ -49,28 +54,49 @@ void setup() {
   pinMode(cell6Pin, INPUT);
 
   display.begin(i2c_Address, true);
-  display.display();
-  delay(2000);
   display.clearDisplay();
-  display.drawPixel(10, 10, white);
+  display.setRotation(2);
+  display.fillScreen(white);
   display.display();
-  delay(1000);
+  delay(3000);
   display.clearDisplay();
+  display.setCursor(2, 2);
+  display.setTextColor(white);
+  display.setTextSize(1);
+  display.println("Hello, World!");
   display.display();
 
-  success_tone();
-  
+  //success_tone();
+  update_cell_voltage();
 }
 
 void loop() {
   update_cell_voltage();
-  sanity_check();
+  debug();
   
   if(voltageUpdaterTimer < millis()){
-    update_cell_voltage();
+    for(int i = 0; i < 6; i++){
+      avgCellVoltages[i] = cellVoltages[i] / cellUpdates;
+      cellVoltages[i] = 0;
+    }
+    cellUpdates = 0;
+    get_single_cell_voltage();
+    sanity_check();
     voltageUpdaterTimer = millis() + voltageUpdaterTimerDelay;
   }
 
+  show_data();
+
+}
+
+void show_data(){
+  display.clearDisplay();
+  display.setCursor(2, 40);
+  for(int i = 0; i < 6; i++){
+    display.print(singleCellVoltages[i]);
+    display.print("|");
+  }
+  display.display();
 }
 
 void sanity_check(){
@@ -78,21 +104,21 @@ void sanity_check(){
     emergency_cutoff();
   }
   for(int il = 0; il < 6; il++){
-    if(cellVoltages[il] / (il + 1) < 3.6){
+    if(singleCellVoltages[il] < 3.6){
       emergency_cutoff();
     }
   }
 }
 
 float cell_delta(){
-  float lowest = cellVoltages[0];
-  float highest = cellVoltages[0];
+  float lowest = singleCellVoltages[0];
+  float highest = singleCellVoltages[0];
   for(int il = 0; il < 6; il++){
-    if(lowest > cellVoltages[il]){
-      lowest = cellVoltages[il];
+    if(lowest > singleCellVoltages[il]){
+      lowest = singleCellVoltages[il];
     }
-    else if(highest < cellVoltages[il]){
-      highest = cellVoltages[il];
+    else if(highest < singleCellVoltages[il]){
+      highest = singleCellVoltages[il];
     }
   }
   return highest - lowest;
@@ -114,10 +140,24 @@ void success_tone(){
   }
 }
 
-void get_cell_voltage(int cellNum){}
+void get_single_cell_voltage(){
+  singleCellVoltages[0] = avgCellVoltages[0];
+  for(int il = 1; il < 6; il++){
+    singleCellVoltages[il] = avgCellVoltages[il] - avgCellVoltages[il - 1];
+  }
+}
 
 void update_cell_voltage(){
   for(int il = 0; il < 6; il++){
-    cellVoltages[il] = analogRead(cellPins[il]) * 5.0 / 1024.0 * (il + 1.0);
+    cellVoltages[il] += analogRead(cellPins[il]) * 4.8 / 1024.0 * (il + 1.0);
   }
+  cellUpdates++;
+}
+
+void debug(){
+  for(int i = 0; i < 6; i++){
+    Serial.print(singleCellVoltages[i]);
+    Serial.print("\t");
+  }
+  Serial.println("");
 }
