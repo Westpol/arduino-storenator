@@ -17,7 +17,7 @@ Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, 
 
 // I/O pins for controlling everything
 #define tonePin 11
-#define selfActivationPin 1
+#define selfActivationPin 12
 #define knobPin 5
 
 #define cell1Pin A0
@@ -37,6 +37,7 @@ int voltageUpdaterTimerDelay = 100;
 
 void setup() {
   pinMode(selfActivationPin, OUTPUT);
+  digitalWrite(selfActivationPin, HIGH);
   pinMode(tonePin, OUTPUT);
   pinMode(knobPin, INPUT_PULLUP);
   
@@ -62,6 +63,7 @@ void setup() {
 }
 
 void loop() {
+  update_cell_voltage();
   sanity_check();
   
   if(voltageUpdaterTimer < millis()){
@@ -83,7 +85,6 @@ void sanity_check(){
 }
 
 float cell_delta(){
-  update_cell_voltage();
   float lowest = cellVoltages[0];
   float highest = cellVoltages[0];
   for(int il = 0; il < 6; il++){
