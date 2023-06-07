@@ -149,7 +149,8 @@ void get_single_cell_voltage(){
 
 void update_cell_voltage(){
   for(int il = 0; il < 6; il++){
-    cellVoltages[il] += analogRead(cellPins[il]) * 4.8 / 1024.0 * (il + 1.0);
+    //cellVoltages[il] += analogRead(cellPins[il]) * 5.0 / 1023.0 * (il + 1.0);
+    cellVoltages[il] += float(map(analogRead(cellPins[il]), 0, 1023, 0, 500)) * (il + 1.0) / 100.0;
   }
   cellUpdates++;
 }
